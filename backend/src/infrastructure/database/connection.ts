@@ -1,15 +1,24 @@
 import { Pool, PoolConfig } from 'pg';
 import { logger } from '../observability/logger';
 
-const poolConfig: PoolConfig = {
-  connectionString: process.env.DATABASE_URL,
-  min: parseInt(process.env.DB_POOL_MIN || '5'),
-  max: parseInt(process.env.DB_POOL_MAX || '20'),
-  idleTimeoutMillis: parseInt(process.env.DB_IDLE_TIMEOUT || '30000'),
-  connectionTimeoutMillis: parseInt(process.env.DB_CONNECTION_TIMEOUT || '2000'),
-};
+function getPoolConfig(): PoolConfig {
+  const connectionString = process.env.DATABASE_URL;
 
-export const pool = new Pool(poolConfig);
+  if (!connectionString) {
+    throw new Error('DATABASE_URL environment variable is not set');
+  }
+
+  return {
+    connectionString,
+    min: parseInt(process.env.DB_POOL_MIN || '5'),
+    max: parseInt(process.env.DB_POOL_MAX || '20'),
+    idleTimeoutMillis: parseInt(process.env.DB_IDLE_TIMEOUT || '30000'),
+    connectionTimeoutMillis: parseInt(process.env.DB_CONNECTION_TIMEOUT || '2000'),
+    ssl: false,
+  };
+}
+
+export const pool = new Pool(getPoolConfig());
 
 pool.on('connect', () => {
   logger.info('Database pool connection established');

@@ -1,3 +1,8 @@
+import dotenv from 'dotenv';
+
+// Load environment variables FIRST before any other imports
+dotenv.config();
+
 import { readFileSync, readdirSync } from 'fs';
 import { join } from 'path';
 import { query } from './connection';
@@ -24,7 +29,10 @@ export async function runMigrations() {
         await query(sql);
         logger.info(`✓ Migration executed: ${file}`);
       } catch (error) {
-        logger.error(`✗ Migration failed: ${file}`, { error });
+        logger.error(`✗ Migration failed: ${file}`, {
+          error: error instanceof Error ? error.message : String(error),
+          stack: error instanceof Error ? error.stack : undefined
+        });
         throw error;
       }
     }
@@ -37,6 +45,9 @@ export async function runMigrations() {
 }
 
 if (require.main === module) {
+  logger.info('Starting migrations', {
+    database: process.env.DATABASE_URL ? process.env.DATABASE_URL.substring(0, 60) + '...' : 'NOT SET'
+  });
   runMigrations()
     .then(() => {
       logger.info('Migrations complete');

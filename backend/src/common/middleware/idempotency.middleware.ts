@@ -4,10 +4,15 @@ import { logger } from '../../infrastructure/observability/logger';
 import { addHours } from 'date-fns';
 
 interface IdempotencyOptions {
-  ttl?: number; // Time to live in seconds (default: 24 hours)
+  ttl?: number;
 }
 
-const DEFAULT_TTL = 24 * 60 * 60; // 24 hours
+interface CachedResponse {
+  statusCode: number;
+  body: any;
+}
+
+const DEFAULT_TTL = 24 * 60 * 60;
 
 export const idempotencyMiddleware = (options: IdempotencyOptions = {}) => {
   return async (req: Request, res: Response, next: NextFunction) => {
@@ -43,7 +48,7 @@ export const idempotencyMiddleware = (options: IdempotencyOptions = {}) => {
 
     try {
       // Check if request was already processed
-      const cachedResponse = await cacheService.get(cacheKey);
+      const cachedResponse = await cacheService.get(cacheKey) as CachedResponse | null;
 
       if (cachedResponse) {
         logger.info('Idempotent request - returning cached response', {
