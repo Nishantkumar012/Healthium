@@ -11,6 +11,7 @@ import { logger } from './infrastructure/observability/logger';
 import authRoutes from './modules/auth/auth.routes';
 import userRoutes from './modules/users/user.routes';
 import doctorRoutes from './modules/doctors/doctor.routes';
+import consultationRoutes from './modules/consultations/consultation.routes';
 
 export const createApp = (): Application => {
   const app = express();
@@ -100,6 +101,7 @@ export const createApp = (): Application => {
   app.use(`/api/${appConfig.apiVersion}/auth`, authRateLimiter, authRoutes);
   app.use(`/api/${appConfig.apiVersion}/users`, userRoutes);
   app.use(`/api/${appConfig.apiVersion}/doctors`, doctorRoutes);
+  app.use(`/api/${appConfig.apiVersion}/consultations`, bookingRateLimiter, consultationRoutes);
 
 
   
