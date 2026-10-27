@@ -4,8 +4,13 @@ import cors from 'cors';
 import { correlationId } from './common/middleware/correlation-id.middleware';
 import { requestLogger } from './common/middleware/request-logger.middleware';
 import { errorHandler, AppError } from './common/middleware/error-handler.middleware';
+import { authRateLimiter, bookingRateLimiter, apiRateLimiter } from './common/middleware/rate-limiter.middleware';
+import { idempotencyMiddleware } from './common/middleware/idempotency.middleware';
 import { appConfig } from './common/config/app.config';
 import { logger } from './infrastructure/observability/logger';
+import authRoutes from './modules/auth/auth.routes';
+import userRoutes from './modules/users/user.routes';
+import doctorRoutes from './modules/doctors/doctor.routes';
 
 export const createApp = (): Application => {
   const app = express();
@@ -17,7 +22,7 @@ export const createApp = (): Application => {
       origin: appConfig.corsOrigin,
       credentials: true,
       methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-      allowedHeaders: ['Content-Type', 'Authorization', 'X-Request-ID'],
+      allowedHeaders: ['Content-Type', 'Authorization', 'X-Request-ID', 'Idempotency-Key'],
     })
   );
 
@@ -28,6 +33,10 @@ export const createApp = (): Application => {
   // Custom middleware
   app.use(correlationId);
   app.use(requestLogger);
+  app.use(idempotencyMiddleware());
+
+  // General rate limiter
+  app.use(apiRateLimiter);
 
   // Health check endpoints
   app.get('/health', (req: Request, res: Response) => {
@@ -87,6 +96,13 @@ export const createApp = (): Application => {
     });
   });
 
+  // API Routes
+  app.use(`/api/${appConfig.apiVersion}/auth`, authRateLimiter, authRoutes);
+  app.use(`/api/${appConfig.apiVersion}/users`, userRoutes);
+  app.use(`/api/${appConfig.apiVersion}/doctors`, doctorRoutes);
+
+
+  
   // 404 handler
   app.use((req: Request, res: Response) => {
     res.status(404).json({

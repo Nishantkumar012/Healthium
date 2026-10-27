@@ -1,4 +1,5 @@
 import rateLimit from 'express-rate-limit';
+import RedisStore from 'rate-limit-redis';
 import { redis } from '../../infrastructure/cache/redis.client';
 import { logger } from '../../infrastructure/observability/logger';
 
@@ -35,11 +36,11 @@ export const createRateLimiter = (options: RateLimiterOptions) => {
         },
       });
     },
-    // Use Redis store for distributed rate limiting
-    store: new (require('rate-limit-redis'))({
-      client: redis,
-      prefix: 'rl:',
-    }),
+    store: new RedisStore({
+      sendCommand: async (...args: string[]) => {
+        return (redis as any).call(...args);
+      },
+    } as any),
   });
 };
 
