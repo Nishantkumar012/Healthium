@@ -1,0 +1,5 @@
+{
+  "name": "@healthum/types",
+  "version": "1.0.0",
+  "description": "Shared TypeScript types for Healthum"
+}
