@@ -37,5 +37,25 @@ export const appConfig = {
   rateLimitMaxRequests: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || '100'),
   authRateLimitMax: parseInt(process.env.AUTH_RATE_LIMIT_MAX || '5'),
   bookingRateLimitMax: parseInt(process.env.BOOKING_RATE_LIMIT_MAX || '20'),
+
+  // Guest Accounts
+  guestAccounts: {
+    patient: {
+      email: 'patient@healthum.demo',
+      password: 'Demo@12345',
+      firstName: 'John',
+      lastName: 'Patient',
+      phone: '+1-555-000-0001',
+      role: 'patient',
+    },
+    doctor: {
+      email: 'doctor@healthum.demo',
+      password: 'Demo@12345',
+      firstName: 'Dr. Sarah',
+      lastName: 'Doctor',
+      phone: '+1-555-000-0002',
+      role: 'doctor',
+    },
+  },
 };
 

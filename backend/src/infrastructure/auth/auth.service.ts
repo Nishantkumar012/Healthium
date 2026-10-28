@@ -9,7 +9,7 @@ import { logger } from '../observability/logger';
 import { JWTPayload, RegisterRequest, LoginRequest, LoginResponse } from '../../common/types/auth.types';
 
 export class AuthService {
-  static async register(data: RegisterRequest): Promise<{ userId: string; email: string }> {
+  static async register(data: RegisterRequest): Promise<LoginResponse> {
     const { email, password, firstName, lastName, phone, userType } = data;
 
     // Check if user already exists
@@ -32,7 +32,7 @@ export class AuthService {
     const result = await query(
       `INSERT INTO users (id, email, password_hash, phone, role, is_verified, created_at, updated_at)
        VALUES ($1, $2, $3, $4, $5, false, NOW(), NOW())
-       RETURNING id, email`,
+       RETURNING id, email, role`,
       [userId, email, hashedPassword, phone, userRole]
     );
 
@@ -43,11 +43,23 @@ export class AuthService {
       [uuidv4(), userId, firstName, lastName]
     );
 
+    // Generate tokens
+    const accessToken = this.generateAccessToken(userId, email, userRole);
+    const refreshToken = this.generateRefreshToken(userId);
+
     logger.info('User registered successfully', { userId, email, userType });
 
     return {
-      userId: result.rows[0].id,
-      email: result.rows[0].email,
+      accessToken,
+      refreshToken,
+      user: {
+        id: userId,
+        email: result.rows[0].email,
+        firstName,
+        lastName,
+        role: userRole,
+        mfaEnabled: false,
+      },
     };
   }
 

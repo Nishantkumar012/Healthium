@@ -2,6 +2,7 @@ import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
 import RedisStore from 'rate-limit-redis';
 import { redis } from '../../infrastructure/cache/redis.client';
 import { logger } from '../../infrastructure/observability/logger';
+import { appConfig } from '../config/app.config';
 
 interface RateLimiterOptions {
   windowMs: number;
@@ -10,6 +11,11 @@ interface RateLimiterOptions {
   keyGenerator?: (req: any) => string;
 }
 
+// Skip rate limiting in development mode
+const skipRateLimit = (req: any) => {
+  return appConfig.isDevelopment;
+};
+
 export const createRateLimiter = (options: RateLimiterOptions) => {
   return rateLimit({
     windowMs: options.windowMs,
@@ -17,6 +23,7 @@ export const createRateLimiter = (options: RateLimiterOptions) => {
     message: options.message || 'Too many requests, please try again later',
     standardHeaders: true,
     legacyHeaders: false,
+    skip: skipRateLimit,
     keyGenerator: options.keyGenerator || ((req: any) => ipKeyGenerator(req.ip)),
     handler: (req, res) => {
       logger.warn('Rate limit exceeded', {
@@ -70,4 +77,4 @@ export const apiRateLimiter = createRateLimiter({
   message: 'API rate limit exceeded',
 });
 
-logger.info('Rate limiters initialized');
+logger.info('Rate limiters initialized' + (appConfig.isDevelopment ? ' (disabled in dev mode)' : ''));

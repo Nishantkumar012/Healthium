@@ -39,9 +39,6 @@ export const createApp = (): Application => {
   app.use(requestLogger);
   app.use(idempotencyMiddleware());
 
-  // General rate limiter
-  app.use(apiRateLimiter);
-
   // Health check endpoints
   app.get('/health', (req: Request, res: Response) => {
     res.json({

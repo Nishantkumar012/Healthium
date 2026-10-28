@@ -3,6 +3,7 @@ import { createApp } from './app';
 import { appConfig } from './common/config/app.config';
 import { logger } from './infrastructure/observability/logger';
 import { pool, closePool } from './infrastructure/database/connection';
+import { seedGuestAccounts } from './infrastructure/database/seed';
 
 const startServer = async () => {
   try {
@@ -10,6 +11,11 @@ const startServer = async () => {
     logger.info('Testing database connection...');
     const testResult = await pool.query('SELECT NOW()');
     logger.info('Database connection successful', { timestamp: testResult.rows[0].now });
+
+    // Seed guest accounts in development mode
+    if (appConfig.isDevelopment) {
+      await seedGuestAccounts();
+    }
 
     // Create Express app
     const app = createApp();
