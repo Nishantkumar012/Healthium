@@ -12,6 +12,8 @@ import authRoutes from './modules/auth/auth.routes';
 import userRoutes from './modules/users/user.routes';
 import doctorRoutes from './modules/doctors/doctor.routes';
 import consultationRoutes from './modules/consultations/consultation.routes';
+import reviewRoutes from './modules/reviews/review.routes';
+import analyticsRoutes from './modules/analytics/analytics.routes';
 
 export const createApp = (): Application => {
   const app = express();
@@ -102,6 +104,8 @@ export const createApp = (): Application => {
   app.use(`/api/${appConfig.apiVersion}/users`, userRoutes);
   app.use(`/api/${appConfig.apiVersion}/doctors`, doctorRoutes);
   app.use(`/api/${appConfig.apiVersion}/consultations`, bookingRateLimiter, consultationRoutes);
+  app.use(`/api/${appConfig.apiVersion}/reviews`, reviewRoutes);
+  app.use(`/api/${appConfig.apiVersion}/analytics`, analyticsRoutes);
 
 
   

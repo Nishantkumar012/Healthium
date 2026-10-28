@@ -1,4 +1,4 @@
-import rateLimit from 'express-rate-limit';
+import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
 import RedisStore from 'rate-limit-redis';
 import { redis } from '../../infrastructure/cache/redis.client';
 import { logger } from '../../infrastructure/observability/logger';
@@ -17,7 +17,7 @@ export const createRateLimiter = (options: RateLimiterOptions) => {
     message: options.message || 'Too many requests, please try again later',
     standardHeaders: true,
     legacyHeaders: false,
-    keyGenerator: options.keyGenerator || ((req: any) => req.ip),
+    keyGenerator: options.keyGenerator || ((req: any) => ipKeyGenerator(req.ip)),
     handler: (req, res) => {
       logger.warn('Rate limit exceeded', {
         ip: req.ip,
